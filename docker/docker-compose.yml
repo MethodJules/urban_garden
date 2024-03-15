@@ -1,0 +1,72 @@
+version: '3'
+services:
+  urban_garden_d8_db:
+    image: mysql:5.7
+    command: --max_allowed_packet=32505856 --innodb_buffer_pool_size=2048 #Set max_allowed_packet to 256M
+    environment:
+      MYSQL_DATABASE: urban_garden_d8
+      MYSQL_ROOT_PASSWORD: urban_garden_d8
+    ports:
+      - "3306:3306"
+    volumes:
+      - urban_garden_d8_db_data:/var/lib/mysql:rw
+      - ./my.cnf:/etc/mysql/mysql.conf.d/mysqld.cnf #config mysql server
+    restart: always
+    #network_mode: host
+  urban_garden_apache:
+    container_name: "urban_garden_apache"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    image: bitnami/apache:2.4.41
+    volumes:
+      - ../:/app:delegated
+      - ./apache/urban_garden_vhost.conf:/vhosts/my_vhost.conf:ro
+    depends_on:
+      - urban_garden_php
+    ports:
+      - "8080:8080"
+  urban_garden_php:
+    container_name: "urban_garden_php"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    build:
+      context: ./php
+      dockerfile: Dockerfile-php
+    volumes:
+      - ../:/app:delegated
+      - ./php/php.ini:/opt/bitnami/php/etc/conf.d/php.ini:ro
+  #corenlp:
+  #  image: nlpbox/corenlp
+  #  ports:
+  #    - "9000:9000"
+  #  restart: always
+  #neo4j:
+  #  image: neo4j:latest
+  #  ports:
+  #    - "7474:7474"
+  #    - "7687:7687"
+  #  volumes:
+  #    - ../neo4j/data:/data
+  #    - ../neo4j/logs:/logs
+  #    - ../neo4j/import/:/var/lib/neo4j/import
+  #    - ../neo4j/plugins:/plugins
+  #  environment:
+  #    - NEO4J_AUTH=neo4j/test
+  #solr:
+  #  image: solr:7.5
+  #  ports:
+  #    - "8983:8983"
+  #  volumes:
+  #    - core2:/opt/solr/server/solr/core2
+  #rasa:
+  #  image: rasa/rasa:latest-full
+  #  ports:
+  #    - 5005:5005
+  #  volumes:
+  #    - ../src/rasa:/app
+  #  command:
+  #    - run
+volumes:
+  urban_garden_d8_db_data:
+    driver: local
+  #core2:

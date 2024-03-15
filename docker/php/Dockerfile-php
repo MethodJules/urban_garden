@@ -1,0 +1,14 @@
+FROM bitnami/php-fpm:8.1.0-debian-10-r0
+
+RUN apt-get update && apt-get install -y \
+		curl \
+		git \
+		vim \
+		wget
+
+# Install Composer
+RUN wget https://getcomposer.org/installer
+RUN mv installer composer-setup.php
+RUN php composer-setup.php
+RUN mv composer.phar /usr/local/bin/composer
+RUN php -r "unlink('composer-setup.php');"
